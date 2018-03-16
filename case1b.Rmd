@@ -1,0 +1,108 @@
+---
+title: "Week5 case1B"
+output: html_notebook
+---
+> A study has been made to compare the nicotine contents of two brand of cigarettes.
+ 10 cigarettes of brand A had an average nicotine content of 3.1 milligrams with standard deviation of 0.5 milligrams, while 8 cigarettes of brand B had an average nicotine contents  of 2.7 milligrams with standard deviation of 0.7 milligrams. Assuming that two sets of data are independent random samples from normal populations.
+
+> 1. Using F distribution and interval approach, Evaluate the scatterings of nicotine of brand A is always smaller than brand B or not. (assuming 98% confidence interval)
+
+### Premise
+* U and V are independent...
+* U = Brand B
+* V = Brand A   
+Values of B are a numeratoir, and values of A are a denominator.
+
+```{r setup}
+mat = matrix(c(10, 3.1, 0.5), ncol=3)
+mat = rbind(mat, c(8, 2.7, 0.7))
+rownames(mat) = c("A", "B")
+colnames(mat) = c("freedom", "mean", "stddev")
+
+varA = mat["A", "stddev"] ^ 2
+varB = mat["B", "stddev"] ^ 2
+dfA = mat["A", "freedom"]-1
+dfB = mat["B", "freedom"]-1
+crtc = 0.02
+conf = 1 - crtc
+F1 = qf(crtc/2, dfB, dfA)
+F99 = qf(1-crtc/2, dfB, dfA)
+
+seekInterval = function(s1, s2, f){
+  return(s2/s1*1/f)
+}
+```
+### Parameters
+`r data.frame(print(mat))`
+* A variance = `r varA`
+* B variance = `r varB`
+* F at 1% = `r F1`
+* F at 99% = `r F99`
+```{r}
+i2 = seekInterval(varA, varB, F1)
+i1 = seekInterval(varA, varB, F99)
+```
+* interval bottom = `r i1`
+* interval top = `r i2`
+
+### Premise
+* the scatterings of nicotine = true variable of nicotine.
+* `r i1` < ""B true variance / A true variance"" < `r i2` must be true.
+
+### Assumption 1: When B true variance = `r varB`
+A true variance < `r varB` / `r i1`   
+A true variance < `r varB / i1`   
+
+A true variance > `r varB` / `r i2`   
+A true variance > `r varB / i2`
+
+`r varB / i2` < A true variance < `r varB / i1`
+
+#### A true nicotine contents (1 sigma in interval top)
+* B sample = `r mat["B", "mean"] + sqrt(varB)`
+* 
+`r mat["A", "mean"] + sqrt(varB / i2)` < A < `r mat["A", "mean"] + sqrt(varB / i1)`
+
+#### Conclusion
+FALSE --> the scatterings of nicotine of brand A is always smaller than brand B.    
+FALSE --> the scatterings of nicotine of brand A is NOT always smaller than brand B.
+
+***
+### Assumption 2: When A true variance = `r varA`
+B true variance > `r i1` * `r varA`   
+B true variance > `r i1 * varA`
+
+B true variance < `r i2` * `r varA`    
+B true variance < `r i2 * varA`
+
+`r i1 * varA` < B true variance < `r i2 * varA`
+
+#### B true nicotine contents (1 sigma in interval top)
+* A sample = `r mat["A", "mean"] + sqrt(varA)`
+* 
+`r mat["B", "mean"] + sqrt(i1 * varA)` < B < `r mat["B", "mean"] + sqrt(i2 * varA)`
+
+#### Conclusion
+FALSE --> the scatterings of nicotine of brand A is always smaller than brand B.   
+FALSE --> the scatterings of nicotine of brand A is NOT always smaller than brand B.
+
+***
+```{r fig.width=7.5}
+par(mar=c(5,4,4,5))
+curve(dnorm(x, mat["A", "mean"], mat["A", "stddev"]), xlim=c(0, 7), col=2, ylab="")
+par(new=T)
+curve(
+  dnorm(x, mat["B", "mean"], mat["B", "stddev"]),
+  xlim=c(0, 7), col=3, axes=F, ylab=""
+)
+par(xpd=T)
+legend(par()$usr[2], par()$usr[4], legend=rownames(mat), pch=20, col=2:3)
+par(new=T)
+curve(
+  df(x, dfA, dfB),
+  xlim=c(0, 7), axes=F, ylab=""
+)
+abline(v=F1, col=4)
+abline(v=F99, col=4)
+```
+98% interval is between blues.s

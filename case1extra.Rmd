@@ -1,0 +1,95 @@
+---
+title: "week5 case1 extra"
+output: html_notebook
+---
+
+## Generate 2 random data groups and do F test.
+* Brand A: 10 random data
+    * mean = 3.1
+    * standard deviation = 0.5
+* Brand B: 8 random data
+    * mean = 2.7
+    * standard deviation = 0.7
+
+```{r}
+sample = 11
+conf = 0.98
+
+a = rnorm(10*sample, 3.1, 0.5)
+b = rnorm(8*sample, 2.7, 0.7)
+
+ahist = hist(a)
+par(new=T)
+curve(
+  dnorm(x, 3,1, 0.5),
+  xlim=c(
+    min(ahist$breaks), 
+    max(ahist$breaks)
+  ),
+  axes=F, xlab="", ylab=""
+)
+
+bhist = hist(b)
+par(new=T)
+curve(
+  dnorm(x, 2.7, 0.7),
+  xlim=c(
+    min(bhist$breaks), 
+    max(bhist$breaks)
+  ),
+  axes=F, xlab="", ylab=""
+)
+
+var.test(a, b, conf.level=conf)
+var.test(b, a, conf.level=conf)
+```
+```{r}
+## T test to estimate population of A
+reta = t.test(a, conf.level=0.98)
+print(reta)
+inta1 = as.double(reta$estimate) - sqrt(as.double(reta$conf.int[2]))
+inta2 = as.double(reta$estimate) + sqrt(as.double(reta$conf.int[2]))
+```
+A nicotin contents interval in 98% confident with 1 sigma is  
+`r inta1` to `r inta2`
+
+```{r}
+## T test to estimate population of B
+retb = t.test(b, conf.level=0.98)
+print(retb)
+intb1 = as.double(retb$estimate) - sqrt(as.double(retb$conf.int[2]))
+intb2 = as.double(retb$estimate) + sqrt(as.double(retb$conf.int[2]))
+```
+B nicotin contents interval in 98% confident with 1 sigma is  
+`r intb1` to `r intb2`
+
+## Conclusion
+F test indicates variance between Brand A and B is not equal.   
+Indicated P values are too small than significant level, 2%.
+
+```{r fig.width=7.5}
+par(mar=c(5,4,4,5))
+curve(
+  dnorm(x, 3.1, 0.5), 
+  xlim=c(0, 7), col=2, ylab=""
+)
+
+par(new=T)
+curve(
+  dnorm(x, 2.7, 0.7),
+  xlim=c(0, 7), col=3, axes=F, ylab=""
+)
+
+par(new=T)
+curve(
+  df(x, 9, 7),
+  xlim=c(0, 7), axes=F, ylab=""
+)
+
+par(xpd=T)
+legend(
+  par()$usr[2], par()$usr[4],
+  legend=c("F", "A", "B"),
+  pch=20, col=1:3
+)
+```
